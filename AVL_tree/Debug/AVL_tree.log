@@ -1,2 +1,2 @@
 ﻿  AVL_tree.cpp
-C:\Users\yakov\source\repos\programming\AVL_tree\AVL_tree.cpp(87): error C4700: использована неинициализированная локальная переменная "z"
+  AVL_tree.vcxproj -> C:\Users\yakov\source\repos\programming\AVL_tree\Debug\AVL_tree.exe

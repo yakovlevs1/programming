@@ -21,7 +21,7 @@ private:
     };
     void insert_node(Node* z) {
         Node* y = nullptr;
-        Node* x = &root;
+        Node* x = root;
         while (x != nullptr) {
             y = x;
             if (z->key < x->key)
@@ -29,8 +29,8 @@ private:
             else x = x->right;
         }
         z->p = y;
-        if (y == nullptr)
-            root = *z;
+        if (y == nullptr) //дерево было пустым
+            root = z;
         else {
             if (z->key < y->key)
                 y->left = z;
@@ -46,7 +46,7 @@ private:
     }
     void transplant(Node* u, Node* v) {
         if (u->p == nullptr) {
-            root = *v;
+            root = v;
         }
         else if (u == u->p->left) {
             u->p->left = v;
@@ -64,7 +64,7 @@ private:
         }
         y->p = x->p;
         if (x->p == nullptr) {
-            root = *y;
+            root = y;
         }
         else if (x == x->p->left) {
             x->p->left = y;
@@ -81,7 +81,7 @@ private:
         }
         y->p = x->p;
         if (x->p == nullptr) {
-            root = *y;
+            root = y;
         }
         else if (x == x->p->left) {
             x->p->left = y;
@@ -101,23 +101,12 @@ private:
     int depth_ = 0;
     int capacity_ = 0;
 public:
-    Node root;
-    Tree() {
-        root.left = nullptr;
-        root.right = nullptr;
-        root.p = nullptr;
-    }
-    Tree(int x) {
-        root.key = x;
-        root.left = nullptr;
-        root.right = nullptr;
-        root.p = nullptr;
-    }
+    Node* root = nullptr;
+    Tree() {}
     void insert(int u) {
-        Node z; 
-        z.key = u; z.left = nullptr; z.right = nullptr; z.p = nullptr; z.diff = 0;
-        Node* y = &z;
-        insert_node(y);
+        Node* z = new Node; 
+        z->key = u; z->left = nullptr; z->right = nullptr; z->p = nullptr; z->diff = 0;
+        insert_node(z);
     }
     Node* search(Node* x, int k) { //поиск узла с заданным ключом, nullptr если не найден
         while (x != nullptr and k != x->key) {
@@ -162,9 +151,9 @@ public:
         return y;
     }
     void node_delete(Node* z) { //Cormen
-        if (z->left = nullptr)
+        if (z->left == nullptr)
             transplant(z, z->right);
-        else if (z->right = nullptr)
+        else if (z->right == nullptr)
             transplant(z, z->left);
         else {
             Node* y = minimum(z->right);
@@ -223,22 +212,44 @@ public:
 
         }
     }
+    Node* deletee(Node* r, int z) {
+        if (r == nullptr)
+            return r;
+        if (z < r->key) {
+            r->left = deletee(r->left, z);
+        }
+        else if (z > r->key)
+            r->right = deletee(r->right, z);
+        else if (r->left != nullptr and r->right != nullptr) {
+            r->key = minimum(r->right)->key;
+            r->right = deletee(r->right, r->key);
+        }
+        else {
+            if (r->left != nullptr)
+                r = r->left;
+            else if (r->right != nullptr)
+                r = r->right;
+            else
+                r = nullptr;
+        }
+        return r;
+    }
     void print_breadth_first_search() {
-        std::queue<Node> q;
+        std::queue<Node*> q;
         q.push(root);
         while (!q.empty()) {
-            if (q.front().left != nullptr) {
-                q.push(*(q.front().left));
+            if (q.front()->left != nullptr) {
+                q.push(q.front()->left);
             }
-            if (q.front().right != nullptr) {
-                q.push(*(q.front().right));
+            if (q.front()->right != nullptr) {
+                q.push(q.front()->right);
             }
-            cout << q.front().key << " ";
+            cout << q.front()->key << " ";
             q.pop();
         }
     }
     void inorder_tree_walk() {
-        inorder_tree_walk(&root);
+        inorder_tree_walk(root);
     }
     int depth() {
         return depth_;
@@ -253,7 +264,9 @@ int main() {
         if (cin)
             t.insert(a);
     }
+   
     t.inorder_tree_walk();
+    t.deletee(t.root, 81);
     cout << endl;
     t.print_breadth_first_search();
     return 0;
