@@ -1,3 +1,2 @@
 ﻿  AVL_tree.cpp
-C:\Users\yakov\source\repos\AVL_tree\AVL_tree.cpp(65,9): warning C4101: a: неиспользованная локальная переменная
-  AVL_tree.vcxproj -> C:\Users\yakov\source\repos\AVL_tree\Debug\AVL_tree.exe
+C:\Users\yakov\source\repos\programming\AVL_tree\AVL_tree.cpp(87): error C4700: использована неинициализированная локальная переменная "z"
