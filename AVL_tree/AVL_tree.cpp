@@ -114,10 +114,84 @@ private:
             if (z->key < y->key)
                 y->left = z;
             else y->right = z;
-            balance_tree(z);
+            balance_tree_insert(z);
         }
     }
-    void balance_tree(Node* z) {
+    void balance(Node* z) {
+        if      (z->p->diff == 2 and z->diff == 1) {
+            right_rotate(z->p);
+            z->diff = 0;
+            z->right->diff = 0;
+        }
+        else if (z->p->diff == 2 and z->diff == 0) {
+            right_rotate(z->p);
+            z->diff = 1;
+            z->right->diff = -1;
+        }
+        else if (z->p->diff == 2 and z->diff == -1) {
+            if (z->right != nullptr) {
+                if (z->right->diff == 1) {
+                    big_right_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = 0;
+                    z->p->right->diff = 0;
+                }
+            }
+            if (z->right != nullptr) {
+                if (z->right->diff == -1) {
+                    big_right_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = 1;
+                    z->p->right->diff = 0;
+                }
+            }
+            if (z->right != nullptr) {
+                if (z->right->diff == 0) {
+                    big_right_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = 0;
+                    z->p->right->diff = 0;
+                }
+            }
+        }
+        else if (z->p->diff == -2 and z->diff == -1) {
+            left_rotate(z->p);
+            z->diff = 0;
+            z->left->diff = 0;
+        }
+        else if (z->p->diff == -2 and z->diff == 0) {
+            left_rotate(z->p);
+            z->diff = -1;
+            z->left->diff = 1;
+        }
+        else if (z->p->diff == -2 and z->diff == 1) {
+            if (z->left != nullptr) {
+                if (z->left->diff == 1) {
+                    big_left_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = -1;
+                    z->p->left->diff = 0;
+                }
+            }
+            if (z->left != nullptr) {
+                if (z->left->diff == -1) {
+                    big_left_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = 0;
+                    z->p->left->diff = 1;
+                }
+            }
+            if (z->left != nullptr) {
+                if (z->left->diff == 0) {
+                    big_left_rotate(z->p);
+                    z->p->diff = 0;
+                    z->diff = 0;
+                    z->p->left->diff = 0;
+                }
+            }
+        }
+    }
+    void balance_tree_insert(Node* z) {
         while (z->p != nullptr) {
             if (z == z->p->left) { //если пришли слева
                 z->p->diff += 1;
@@ -127,43 +201,7 @@ private:
                     z = z->p;
                     continue;
                 }
-                else if (z->p->diff == 2 and z->diff == 1) {
-                    right_rotate(z->p);
-                    z->diff = 0;
-                    z->right->diff = 0;
-                }
-                else if (z->p->diff == 2 and z->diff == 0) {
-                    right_rotate(z->p);
-                    z->diff = 1;
-                    z->right->diff = -1;
-                }
-                else if (z->p->diff == 2 and z->diff == -1) {
-                    if (z->right != nullptr) {
-                        if (z->right->diff == 1) {
-                            big_right_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = 0;
-                            z->p->right->diff = 0;
-                        }
-                    }
-                    if (z->right != nullptr) {
-                        if (z->right->diff == -1) {
-                            big_right_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = 1;
-                            z->p->right->diff = 0;
-                        }
-                    }
-                    if (z->right != nullptr) {
-                        if (z->right->diff == 0) {
-                            big_right_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = 0;
-                            z->p->right->diff = 0;
-                        }
-                    }
-                }
-
+                else balance(z);
             }
             else {//если пришли справа
                 z->p->diff -= 1;
@@ -173,44 +211,9 @@ private:
                     z = z->p;
                     continue;
                 }
-                else if (z->p->diff == -2 and z->diff == -1) {
-                    left_rotate(z->p);
-                    z->diff = 0;
-                    z->left->diff = 0;
-                }
-                else if (z->p->diff == -2 and z->diff == 0) {
-                    left_rotate(z->p);
-                    z->diff = -1;
-                    z->left->diff = 1;
-                }
-                else if (z->p->diff == -2 and z->diff == 1) {
-                    if (z->left != nullptr) {
-                        if (z->left->diff == 1) {
-                            big_left_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = -1;
-                            z->p->left->diff = 0;
-                        }
-                    }
-                    if (z->left != nullptr) {
-                        if (z->left->diff == -1) {
-                            big_left_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = 0;
-                            z->p->left->diff = 1;
-                        }
-                    }
-                    if (z->left != nullptr) {
-                        if (z->left->diff == 0) {
-                            big_left_rotate(z->p);
-                            z->p->diff = 0;
-                            z->diff = 0;
-                            z->p->left->diff = 0;
-                        }
-                    }
-                }
+                else balance(z);
+                z = z->p;
             }
-            z = z->p;
         }
     }
     int depth_ = 0;
@@ -328,12 +331,14 @@ public:
             r->right = erase(r->right, r->key);
         }
         else {
+
             if (r->left != nullptr)
                 r = r->left;
             else if (r->right != nullptr)
                 r = r->right;
             else
                 r = nullptr;
+
         }
         return r;
     }
