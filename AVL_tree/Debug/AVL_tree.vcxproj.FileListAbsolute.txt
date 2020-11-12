@@ -1,0 +1,2 @@
+D:\MIPT\programming\AVL_tree\Debug\AVL_tree.exe
+D:\MIPT\programming\AVL_tree\Debug\AVL_tree.pdb

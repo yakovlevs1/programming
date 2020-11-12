@@ -14,29 +14,12 @@ private:
         Node* left;
         Node* right;
         Node* p; //parent
-        unsigned short diff; // diff(x) = h(L) - h(R)
+        short diff; // diff(x) = h(L) - h(R)
         bool operator==(const Node& x) {
             return (this->key == x.key);
         }
     };
-    void insert_node(Node* z) {
-        Node* y = nullptr;
-        Node* x = root;
-        while (x != nullptr) {
-            y = x;
-            if (z->key < x->key)
-                x = x->left;
-            else x = x->right;
-        }
-        z->p = y;
-        if (y == nullptr) //дерево было пустым
-            root = z;
-        else {
-            if (z->key < y->key)
-                y->left = z;
-            else y->right = z;
-        }
-    }
+    
     void inorder_tree_walk(Node* x) {
         if (x != nullptr) {
             inorder_tree_walk(x->left);
@@ -98,6 +81,138 @@ private:
         left_rotate(x->left);
         right_rotate(x);
     }
+    void node_delete(Node* z) { //Cormen
+        if (z->left == nullptr)
+            transplant(z, z->right);
+        else if (z->right == nullptr)
+            transplant(z, z->left);
+        else {
+            Node* y = minimum(z->right);
+            if (y->p != z) {
+                transplant(y, y->right);
+                y->right = z->right;
+                y->right->p = y;
+            }
+            transplant(z, y);
+            y->left = z->left;
+            y->left->p = y;
+        }
+    }
+    void insert_node(Node* z) {
+        Node* y = nullptr;
+        Node* x = root;
+        while (x != nullptr) { //поиск места
+            y = x;
+            if (z->key < x->key)
+                x = x->left;
+            else x = x->right;
+        }
+        z->p = y;
+        if (y == nullptr) //дерево было пустым
+            root = z;
+        else {
+            if (z->key < y->key)
+                y->left = z;
+            else y->right = z;
+            balance_tree(z);
+        }
+    }
+    void balance_tree(Node* z) {
+        while (z->p != nullptr) {
+            if (z == z->p->left) { //если пришли слева
+                z->p->diff += 1;
+                if (z->p->diff == 0)
+                    break;
+                else if (z->p->diff == 1 or z->p->diff == -1) {
+                    z = z->p;
+                    continue;
+                }
+                else if (z->p->diff == 2 and z->diff == 1) {
+                    right_rotate(z->p);
+                    z->diff = 0;
+                    z->right->diff = 0;
+                }
+                else if (z->p->diff == 2 and z->diff == 0) {
+                    right_rotate(z->p);
+                    z->diff = 1;
+                    z->right->diff = -1;
+                }
+                else if (z->p->diff == 2 and z->diff == -1) {
+                    if (z->right != nullptr) {
+                        if (z->right->diff == 1) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                    if (z->right != nullptr) {
+                        if (z->right->diff == -1) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 1;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                    if (z->right != nullptr) {
+                        if (z->right->diff == 0) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                }
+
+            }
+            else {//если пришли справа
+                z->p->diff -= 1;
+                if (z->p->diff == 0) //высота не изменилась
+                    break;
+                else if (z->p->diff == 1 or z->p->diff == -1) {
+                    z = z->p;
+                    continue;
+                }
+                else if (z->p->diff == -2 and z->diff == -1) {
+                    left_rotate(z->p);
+                    z->diff = 0;
+                    z->left->diff = 0;
+                }
+                else if (z->p->diff == -2 and z->diff == 0) {
+                    left_rotate(z->p);
+                    z->diff = -1;
+                    z->left->diff = 1;
+                }
+                else if (z->p->diff == -2 and z->diff == 1) {
+                    if (z->left != nullptr) {
+                        if (z->left->diff == 1) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = -1;
+                            z->p->left->diff = 0;
+                        }
+                    }
+                    if (z->left != nullptr) {
+                        if (z->left->diff == -1) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->left->diff = 1;
+                        }
+                    }
+                    if (z->left != nullptr) {
+                        if (z->left->diff == 0) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->left->diff = 0;
+                        }
+                    }
+                }
+            }
+            z = z->p;
+        }
+    }
     int depth_ = 0;
     int capacity_ = 0;
 public:
@@ -108,13 +223,16 @@ public:
         z->key = u; z->left = nullptr; z->right = nullptr; z->p = nullptr; z->diff = 0;
         insert_node(z);
     }
-    Node* search(Node* x, int k) { //поиск узла с заданным ключом, nullptr если не найден
+    Node* search(Node* x, int k) { //поиск узла в поддереве с корнем x с заданным ключом, nullptr если не найден
         while (x != nullptr and k != x->key) {
             if (k < x->key)
                 x = x->left;
             else x = x->right;
         }
         return x;
+    }
+    Node* search(int k) {
+        return search(root, k);
     }
     Node* minimum(Node* x) { //минимум дерева (x = root) или поддерева
         while (x->left != nullptr) {
@@ -150,23 +268,7 @@ public:
         }
         return y;
     }
-    void node_delete(Node* z) { //Cormen
-        if (z->left == nullptr)
-            transplant(z, z->right);
-        else if (z->right == nullptr)
-            transplant(z, z->left);
-        else {
-            Node* y = minimum(z->right);
-            if (y->p != z) {
-                transplant(y, y->right);
-                y->right = z->right;
-                y->right->p = y;
-            }
-            transplant(z, y);
-            y->left = z->left;
-            y->left->p = y;
-        }
-    }
+    //ifmo:
     void erase(Node* v) {                // neerc.ifmo.ru
         Node* par = v->p;
         if (v->left == nullptr and v->right == nullptr) {         // первый случай: удаляемый элемент не имеет потомков
@@ -212,17 +314,18 @@ public:
 
         }
     }
-    Node* deletee(Node* r, int z) {
+    //Рекурсивно:
+    Node* erase(Node* r, int z) {
         if (r == nullptr)
             return r;
         if (z < r->key) {
-            r->left = deletee(r->left, z);
+            r->left = erase(r->left, z);
         }
         else if (z > r->key)
-            r->right = deletee(r->right, z);
+            r->right = erase(r->right, z);
         else if (r->left != nullptr and r->right != nullptr) {
             r->key = minimum(r->right)->key;
-            r->right = deletee(r->right, r->key);
+            r->right = erase(r->right, r->key);
         }
         else {
             if (r->left != nullptr)
@@ -234,6 +337,15 @@ public:
         }
         return r;
     }
+    bool erase(int z) {
+        if (search(z) == nullptr)
+            return false;
+        else {
+            erase(root, z);
+            return true;
+        }
+    }
+
     void print_breadth_first_search() {
         std::queue<Node*> q;
         q.push(root);
@@ -266,7 +378,7 @@ int main() {
     }
    
     t.inorder_tree_walk();
-    t.deletee(t.root, 81);
+    t.erase(81);
     cout << endl;
     t.print_breadth_first_search();
     return 0;
