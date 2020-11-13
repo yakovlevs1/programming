@@ -117,105 +117,179 @@ private:
             balance_tree_insert(z);
         }
     }
-    void balance(Node* z) {
-        if      (z->p->diff == 2 and z->diff == 1) {
-            right_rotate(z->p);
-            z->diff = 0;
-            z->right->diff = 0;
-        }
-        else if (z->p->diff == 2 and z->diff == 0) {
-            right_rotate(z->p);
-            z->diff = 1;
-            z->right->diff = -1;
-        }
-        else if (z->p->diff == 2 and z->diff == -1) {
-            if (z->right != nullptr) {
-                if (z->right->diff == 1) {
-                    big_right_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = 0;
-                    z->p->right->diff = 0;
-                }
-            }
-            if (z->right != nullptr) {
-                if (z->right->diff == -1) {
-                    big_right_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = 1;
-                    z->p->right->diff = 0;
-                }
-            }
-            if (z->right != nullptr) {
-                if (z->right->diff == 0) {
-                    big_right_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = 0;
-                    z->p->right->diff = 0;
-                }
-            }
-        }
-        else if (z->p->diff == -2 and z->diff == -1) {
-            left_rotate(z->p);
-            z->diff = 0;
-            z->left->diff = 0;
-        }
-        else if (z->p->diff == -2 and z->diff == 0) {
-            left_rotate(z->p);
-            z->diff = -1;
-            z->left->diff = 1;
-        }
-        else if (z->p->diff == -2 and z->diff == 1) {
-            if (z->left != nullptr) {
-                if (z->left->diff == 1) {
-                    big_left_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = -1;
-                    z->p->left->diff = 0;
-                }
-            }
-            if (z->left != nullptr) {
-                if (z->left->diff == -1) {
-                    big_left_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = 0;
-                    z->p->left->diff = 1;
-                }
-            }
-            if (z->left != nullptr) {
-                if (z->left->diff == 0) {
-                    big_left_rotate(z->p);
-                    z->p->diff = 0;
-                    z->diff = 0;
-                    z->p->left->diff = 0;
-                }
-            }
-        }
-    }
     void balance_tree_insert(Node* z) {
         while (z->p != nullptr) {
             if (z == z->p->left) { //если пришли слева
                 z->p->diff += 1;
-                if (z->p->diff == 0)
-                    break;
-                else if (z->p->diff == 1 or z->p->diff == -1) {
-                    z = z->p;
-                    continue;
-                }
-                else balance(z);
             }
-            else {//если пришли справа
-                z->p->diff -= 1;
-                if (z->p->diff == 0) //высота не изменилась
-                    break;
-                else if (z->p->diff == 1 or z->p->diff == -1) {
-                    z = z->p;
-                    continue;
-                }
-                else balance(z);
+            else { z->p->diff -= 1; }
+            if (z->p->diff == 0)
+                break;
+            else if (z->p->diff == 1 or z->p->diff == -1) {
                 z = z->p;
+                continue;
+            }
+            else { 
+                if (z->p->diff == 2 and z->diff == 1) {
+                    right_rotate(z->p);
+                    z->diff = 0;
+                    z->right->diff = 0;
+                }
+                else if (z->p->diff == 2 and z->diff == 0) {
+                    right_rotate(z->p);
+                    z->diff = 1;
+                    z->right->diff = -1;
+                }
+                else if (z->p->diff == 2 and z->diff == -1) {
+                    if (z->right != nullptr) {
+                        if (z->right->diff == 1) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                    if (z->right != nullptr) {
+                        if (z->right->diff == -1) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 1;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                    if (z->right != nullptr) {
+                        if (z->right->diff == 0) {
+                            big_right_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->right->diff = 0;
+                        }
+                    }
+                }
+                else if (z->p->diff == -2 and z->diff == -1) {
+                    left_rotate(z->p);
+                    z->diff = 0;
+                    z->left->diff = 0;
+                }
+                else if (z->p->diff == -2 and z->diff == 0) {
+                    left_rotate(z->p);
+                    z->diff = -1;
+                    z->left->diff = 1;
+                }
+                else if (z->p->diff == -2 and z->diff == 1) {
+                    if (z->left != nullptr) {
+                        if (z->left->diff == 1) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = -1;
+                            z->p->left->diff = 0;
+                        }
+                    }
+                    if (z->left != nullptr) {
+                        if (z->left->diff == -1) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->left->diff = 1;
+                        }
+                    }
+                    if (z->left != nullptr) {
+                        if (z->left->diff == 0) {
+                            big_left_rotate(z->p);
+                            z->p->diff = 0;
+                            z->diff = 0;
+                            z->p->left->diff = 0;
+                        }
+                    }
+                }
+            z = z->p;
+            }
+            
+        }
+    }
+    void balance_tree_erase(Node* z) {
+        while (z->p != nullptr) {
+            //Пересчёт
+            if (z == z->p->left) { //если пришли слева
+                z = z->p;
+                z->diff -= 1;
+            }
+            else {                 //если пришли справа
+                z = z->p;
+                z->diff += 1;
+            }
+            if (z->diff == 1 or z->diff == -1)
+                break;
+            else if (z->diff == 0) {
+                continue;
+            }
+            else {
+                if (z->diff == 2 and z->left->diff == 1) {
+                    right_rotate(z);
+                    z->diff = 0;
+                    z->p->diff = 0;
+                }
+                else if (z->diff == 2 and z->left->diff == 0) {
+                    right_rotate(z);
+                    z->diff = 1;
+                    z->p->diff = -1;
+                }
+                else if (z->diff == 2 and z->left->diff == -1) {
+                    if (z->left->right->diff == 1) {
+                        big_right_rotate(z);
+                        z->diff = -1;
+                        z->p->diff = 0;
+                        z->p->left->diff = 0;
+                    }
+                    if (z->left->right->diff == -1) {
+                        big_right_rotate(z);
+                        z->diff = 0;
+                        z->p->diff = 0;
+                        z->p->left->diff = 1;
+                    }
+                    if (z->left->right->diff == 0) {
+                        big_right_rotate(z);
+                        z->p->diff = 0;
+                        z->diff = 0;
+                        z->p->right->diff = 0;
+                    }
+
+                }
+                else if (z->diff == -2 and z->right->diff == -1) {
+                    left_rotate(z);
+                    z->diff = 0;
+                    z->p->diff = 0;
+                }
+                else if (z->diff == -2 and z->right->diff == 0) {
+                    left_rotate(z);
+                    z->diff = 0;
+                    z->p->diff = 1;
+                }
+                else if (z->diff == -2 and z->right->diff == 1) {
+                    if (z->right->left->diff == 1) {
+                        big_left_rotate(z);
+                        z->diff = 1;
+                        z->p->diff = 0;
+                        z->p->right->diff = 0;
+                    }
+                    if (z->right->left->diff == -1) {
+                        big_left_rotate(z);
+                        z->diff = 0;
+                        z->p->diff = 0;
+                        z->p->right->diff = -1;
+                    }
+                    if (z->right->left->diff == 0) {
+                        big_left_rotate(z);
+                        z->diff = 0;
+                        z->p->diff = 0;
+                        z->p->right->diff = 0;
+                    }
+                }
+
             }
         }
     }
+    
     int depth_ = 0;
     int capacity_ = 0;
 public:
@@ -331,14 +405,13 @@ public:
             r->right = erase(r->right, r->key);
         }
         else {
-
+            balance_tree_erase(r);
             if (r->left != nullptr)
                 r = r->left;
             else if (r->right != nullptr)
                 r = r->right;
             else
                 r = nullptr;
-
         }
         return r;
     }
@@ -368,9 +441,6 @@ public:
     void inorder_tree_walk() {
         inorder_tree_walk(root);
     }
-    int depth() {
-        return depth_;
-    }
 };
 
 int main() {
@@ -381,9 +451,8 @@ int main() {
         if (cin)
             t.insert(a);
     }
-   
     t.inorder_tree_walk();
-    t.erase(81);
+    t.erase(50);
     cout << endl;
     t.print_breadth_first_search();
     return 0;
