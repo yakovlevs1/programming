@@ -27,18 +27,6 @@ private:
             inorder_tree_walk(x->right);
         }
     }
-    void transplant(Node* u, Node* v) {
-        if (u->p == nullptr) {
-            root = v;
-        }
-        else if (u == u->p->left) {
-            u->p->left = v;
-        }
-        else u->p->right = v;
-        if (v != nullptr) {
-            v->p = u->p;
-        }
-    }
     void left_rotate(Node* x) {
         Node* y = x->right;
         x->right = y->left;
@@ -81,40 +69,31 @@ private:
         left_rotate(x->left);
         right_rotate(x);
     }
-    void node_delete(Node* z) { //Cormen
-        if (z->left == nullptr)
-            transplant(z, z->right);
-        else if (z->right == nullptr)
-            transplant(z, z->left);
-        else {
-            Node* y = minimum(z->right);
-            if (y->p != z) {
-                transplant(y, y->right);
-                y->right = z->right;
-                y->right->p = y;
-            }
-            transplant(z, y);
-            y->left = z->left;
-            y->left->p = y;
-        }
-    }
-    void insert_node(Node* z) {
+    bool insert_node(Node* z) {
         Node* y = nullptr;
         Node* x = root;
         while (x != nullptr) { //поиск места
             y = x;
             if (z->key < x->key)
                 x = x->left;
-            else x = x->right;
+            else if (z->key > x->key)
+                x = x->right;
+            else if (z->key == x->key)
+                return false;
         }
         z->p = y;
-        if (y == nullptr) //дерево было пустым
+        if (y == nullptr) { //дерево было пустым
             root = z;
+            capacity_++;
+            return true;
+        }
         else {
             if (z->key < y->key)
                 y->left = z;
             else y->right = z;
             balance_tree_insert(z);
+            capacity_++;
+            return true;
         }
     }
     void balance_tree_insert(Node* z) {
@@ -289,18 +268,7 @@ private:
             }
         }
     }
-    
-    int depth_ = 0;
-    int capacity_ = 0;
-public:
-    Node* root = nullptr;
-    Tree() {}
-    void insert(int u) {
-        Node* z = new Node; 
-        z->key = u; z->left = nullptr; z->right = nullptr; z->p = nullptr; z->diff = 0;
-        insert_node(z);
-    }
-    Node* search(Node* x, int k) { //поиск узла в поддереве с корнем x с заданным ключом, nullptr если не найден
+    Node* search(Node* x, int k) const { //поиск узла в поддереве с корнем x с заданным ключом, nullptr если не найден
         while (x != nullptr and k != x->key) {
             if (k < x->key)
                 x = x->left;
@@ -308,22 +276,19 @@ public:
         }
         return x;
     }
-    Node* search(int k) {
-        return search(root, k);
-    }
-    Node* minimum(Node* x) { //минимум дерева (x = root) или поддерева
+    Node* minimum(Node* x) const { //минимум дерева (x = root) или поддерева
         while (x->left != nullptr) {
             x = x->left;
         }
         return x;
     }
-    Node* maximum(Node* x) { //максимум дерева (x = root) или поддерева
+    Node* maximum(Node* x) const { //максимум дерева (x = root) или поддерева
         while (x->right != nullptr) {
             x = x->right;
         }
         return x;
     }
-    Node* successor(Node* x) { //следующий за x элемент
+    Node* successor(Node* x) const { //следующий за x элемент
         if (x->right != nullptr) {
             return minimum(x->right);
         }
@@ -334,7 +299,7 @@ public:
         }
         return y;
     }
-    Node* preccessor(Node* x) {
+    Node* preccessor(Node* x) const {
         if (x->left != nullptr) {
             return maximum(x->left);
         }
@@ -345,53 +310,6 @@ public:
         }
         return y;
     }
-    //ifmo:
-    void erase(Node* v) {                // neerc.ifmo.ru
-        Node* par = v->p;
-        if (v->left == nullptr and v->right == nullptr) {         // первый случай: удаляемый элемент не имеет потомков
-            if (par->left == v)
-                par->left = nullptr;
-            if (par->right == v)
-                par->right = nullptr;
-        }
-        else if (v->left == nullptr or v->right == nullptr) {     // второй случай: удаляемый элемент имеет одного потомка
-            if (v->left == nullptr) {
-                if (par->left == v) {
-                    par->left = v->right;
-                }
-                else {
-                    par->right = v->right;
-                }
-                v->right->p = par;
-            }
-            else {
-                if (par->left == v) {
-                    par->left = v->left;
-                }
-                else {
-                    par->right = v->left;
-                }
-                v->left->p = par;
-            }
-        }
-        else {                                         // третий случай: удаляемый элемент имеет двух потомков
-            Node* next = successor(v);
-            v->key = next->key;
-            if (next->p->left == next) {
-                next->p->left = next->right;
-                if (next->right != nullptr) {
-                    next->right->p = next->p;
-                }
-            }
-            else {
-                next->p->right = next->left;
-                if (next->left != nullptr)
-                    next->right->p = next->p;
-            }
-
-        }
-    }
-    //Рекурсивно:
     Node* erase(Node* r, int z) {
         if (r == nullptr)
             return r;
@@ -406,6 +324,7 @@ public:
         }
         else {
             balance_tree_erase(r);
+            capacity_--;
             if (r->left != nullptr)
                 r = r->left;
             else if (r->right != nullptr)
@@ -415,15 +334,30 @@ public:
         }
         return r;
     }
+    int depth_ = 0;
+    unsigned long long int capacity_ = 0;
+public:
+    Node* root = nullptr;
+    Tree() {}
+    bool insert(int const u) {
+        Node* z = new Node; 
+        z->key = u; z->left = nullptr; z->right = nullptr; z->p = nullptr; z->diff = 0;
+        return insert_node(z);
+    }
+    bool find(int const k) const {
+        if (search(root, k) == nullptr) {
+            return false;
+        }
+        else return true;
+    }
     bool erase(int z) {
-        if (search(z) == nullptr)
+        if (find(z) == false)
             return false;
         else {
             erase(root, z);
             return true;
         }
     }
-
     void print_breadth_first_search() {
         std::queue<Node*> q;
         q.push(root);
@@ -441,6 +375,25 @@ public:
     void inorder_tree_walk() {
         inorder_tree_walk(root);
     }
+
+    using size_type = unsigned long long int;
+    size_type size() const {
+        return capacity_;
+    }
+    using iterator = Node*;
+    iterator front() const {
+        return minimum(root);
+    }
+    iterator back() const {
+        return maximum(root);
+    }
+    iterator next(iterator it) const { // получение итератора на следующий элемент 
+        return successor(it);
+    }
+    iterator prev(iterator it) const {// получение итератора на предыдущий. элемент
+        return preccessor(it);
+    } 
+
 };
 
 int main() {
@@ -451,8 +404,7 @@ int main() {
         if (cin)
             t.insert(a);
     }
-    t.inorder_tree_walk();
-    t.erase(50);
+    cout << t.next(t.front())->key;
     cout << endl;
     t.print_breadth_first_search();
     return 0;
