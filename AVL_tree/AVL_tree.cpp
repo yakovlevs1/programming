@@ -6,11 +6,11 @@ using std::cin;
 using std::cout;
 using std::endl;
 using std::vector;
-
-class Tree {
+template <typename Key, typename Cmp = std::less<Key>>
+class Tree final {
 private:
     struct Node {
-        int key;
+        Key key;
         Node* left;
         Node* right;
         Node* p; //parent
@@ -74,12 +74,11 @@ private:
         Node* x = root;
         while (x != nullptr) { //поиск места
             y = x;
-            if (z->key < x->key)
+            if (cmp(z->key, x->key))
                 x = x->left;
-            else if (z->key > x->key)
+            else if (!cmp(z->key, x->key))
                 x = x->right;
-            else if (z->key == x->key)
-                return false;
+            else return false;
         }
         z->p = y;
         if (y == nullptr) { //дерево было пустым
@@ -88,7 +87,7 @@ private:
             return true;
         }
         else {
-            if (z->key < y->key)
+            if (cmp(z->key, y->key))
                 y->left = z;
             else y->right = z;
             balance_tree_insert(z);
@@ -98,9 +97,7 @@ private:
     }
     void balance_tree_insert(Node* z) {
         while (z->p != nullptr) {
-            if (z == z->p->left) { //если пришли слева
-                z->p->diff += 1;
-            }
+            if (z == z->p->left) { z->p->diff += 1; }
             else { z->p->diff -= 1; }
             if (z->p->diff == 0)
                 break;
@@ -181,7 +178,8 @@ private:
                         }
                     }
                 }
-            z = z->p;
+                if (z->p != nullptr)
+                    z = z->p;
             }
             
         }
@@ -268,9 +266,9 @@ private:
             }
         }
     }
-    Node* search(Node* x, int k) const { //поиск узла в поддереве с корнем x с заданным ключом, nullptr если не найден
-        while (x != nullptr and k != x->key) {
-            if (k < x->key)
+    Node* search(Node* x, Key k) const { //поиск узла в поддереве с корнем x с заданным ключом, nullptr если не найден
+        while (x != nullptr and (cmp(k, x->key) or !cmp(k, x->key))) {
+            if (cmp(k, x->key))
                 x = x->left;
             else x = x->right;
         }
@@ -310,7 +308,7 @@ private:
         }
         return y;
     }
-    Node* erase(Node* r, int z) {
+    Node* erase(Node* r, Key z) {
         if (r == nullptr)
             return r;
         if (z < r->key) {
@@ -335,22 +333,23 @@ private:
         return r;
     }
     int depth_ = 0;
+    Cmp const cmp;
     unsigned long long int capacity_ = 0;
 public:
     Node* root = nullptr;
     Tree() {}
-    bool insert(int const u) {
+    bool insert(Key const u) {
         Node* z = new Node; 
         z->key = u; z->left = nullptr; z->right = nullptr; z->p = nullptr; z->diff = 0;
         return insert_node(z);
     }
-    bool find(int const k) const {
+    bool find(Key const k) const {
         if (search(root, k) == nullptr) {
             return false;
         }
         else return true;
     }
-    bool erase(int z) {
+    bool erase(Key z) {
         if (find(z) == false)
             return false;
         else {
@@ -398,13 +397,12 @@ public:
 
 int main() {
     int a;
-    Tree t;
+    Tree<int> t;
     while (cin) {
         cin >> a;
         if (cin)
             t.insert(a);
     }
-    cout << t.next(t.front())->key;
     cout << endl;
     t.print_breadth_first_search();
     return 0;
